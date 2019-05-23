@@ -18,7 +18,7 @@ public class NestedScrollingWebView extends WebView implements NestedScrollingCh
     private boolean mIsSelfFling;
     private boolean mHasFling;
 
-    private final int TOUCHSLOP;
+    private final int TOUCH_SLOP;
     private int mMaximumVelocity;
     private int mFirstY;
     private int mLastY;
@@ -48,7 +48,7 @@ public class NestedScrollingWebView extends WebView implements NestedScrollingCh
         mScroller = new Scroller(getContext());
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mMaximumVelocity = configuration.getScaledMaximumFlingVelocity();
-        TOUCHSLOP = configuration.getScaledTouchSlop();
+        TOUCH_SLOP = configuration.getScaledTouchSlop();
         DENSITY = context.getResources().getDisplayMetrics().density;
     }
 
@@ -68,7 +68,7 @@ public class NestedScrollingWebView extends WebView implements NestedScrollingCh
         }
 
         final int offset = getScrollY();
-        return offset < range - TOUCHSLOP;
+        return offset < range - TOUCH_SLOP;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -103,7 +103,7 @@ public class NestedScrollingWebView extends WebView implements NestedScrollingCh
                 if (!dispatchNestedPreScroll(0, -dy, mScrollConsumed, null)) {
                     scrollBy(0, -dy);
                 }
-                if (Math.abs(mFirstY - y) > TOUCHSLOP) {
+                if (Math.abs(mFirstY - y) > TOUCH_SLOP) {
                     //屏蔽WebView本身的滑动，滑动事件自己处理
                     event.setAction(MotionEvent.ACTION_CANCEL);
                 }

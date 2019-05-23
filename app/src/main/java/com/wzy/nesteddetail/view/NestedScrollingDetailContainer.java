@@ -24,26 +24,24 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
     public static final String TAG_NESTED_SCROLL_WEBVIEW = "nested_scroll_webview";
     public static final String TAG_NESTED_SCROLL_RECYCLERVIEW = "nested_scroll_recyclerview";
 
-    //WebView向RecyclerView滑动
-    private static final int SCROLL_WEB_PARENT = 0;
-    //父控件向WebView滑动，位于父控件的dispatchTouchEvent事件中
-    private static final int SCROLL_PARENT_WEB = 1;
-    //RecyclerView向父控件滑动，位于RecyclerView的fling事件中
-    private static final int SCROLL_RV_PARENT = 2;
+    private static final int FLYING_FROM_WEBVIEW_TO_PARENT = 0;
+    private static final int FLYING_FROM_PARENT_TO_WEBVIEW = 1;
+    private static final int FLYING_FROM_RVLIST_TO_PARENT = 2;
 
-    private boolean hasFling;
-    private boolean isRvFlingDown;
+    private boolean mIsSetFlying;
+    private boolean mIsRvFlyingDown;
     private boolean mIsBeingDragged;
 
     private int mMaximumVelocity;
-    private int currentScrollType;
+    private int mCurFlyingType;
     private int mInnerScrollHeight; // 容器的最大滑动距离
     private final int TOUCH_SLOP;
     private int mScreenWidth;
+    private int mLastY;
+    private int mLastMotionY;
 
     private NestedScrollingWebView mChildWebView;
     private RecyclerView mChildRecyclerView;
-
 
     private NestedScrollingParentHelper mParentHelper;
     private Scroller mScroller;
@@ -123,8 +121,8 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
 
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                hasFling = false;
-                isRvFlingDown = false;
+                mIsSetFlying = false;
+                mIsRvFlyingDown = false;
                 initOrResetVelocityTracker();
                 resetScroller();
                 dealWithError();
@@ -139,7 +137,7 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
                     //处理连接处的父控件fling事件
                     mVelocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
                     int yVelocity = (int) -mVelocityTracker.getYVelocity();
-                    currentScrollType = yVelocity > 0 ? SCROLL_WEB_PARENT : SCROLL_PARENT_WEB;
+                    mCurFlyingType = yVelocity > 0 ? FLYING_FROM_WEBVIEW_TO_PARENT : FLYING_FROM_PARENT_TO_WEBVIEW;
                     recycleVelocityTracker();
                     parentFling(yVelocity);
                 }
@@ -148,8 +146,6 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
 
         return super.dispatchTouchEvent(ev);
     }
-
-    private int mLastY;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -174,8 +170,6 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
         }
         return true;
     }
-
-    private int mLastMotionY;
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -272,35 +266,35 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
     public void computeScroll() {
         if (mScroller.computeScrollOffset()) {
             int currY = mScroller.getCurrY();
-            switch (currentScrollType) {
-                case SCROLL_WEB_PARENT://WebView向父控件滑动
-                    if (isRvFlingDown) {
+            switch (mCurFlyingType) {
+                case FLYING_FROM_WEBVIEW_TO_PARENT://WebView向父控件滑动
+                    if (mIsRvFlyingDown) {
                         //RecyclerView的区域的fling由自己完成
                         break;
                     }
                     scrollTo(0, currY);
                     invalidate();
                     checkRvTop();
-                    if (getScrollY() == getInnerScrollHeight() && !hasFling) {
+                    if (getScrollY() == getInnerScrollHeight() && !mIsSetFlying) {
                         //滚动到父控件底部，滚动事件交给RecyclerView
-                        hasFling = true;
+                        mIsSetFlying = true;
                         recyclerViewFling((int) mScroller.getCurrVelocity());
                     }
                     break;
-                case SCROLL_PARENT_WEB://父控件向WebView滑动
+                case FLYING_FROM_PARENT_TO_WEBVIEW://父控件向WebView滑动
                     scrollTo(0, currY);
                     invalidate();
-                    if (currY <= 0 && !hasFling) {
+                    if (currY <= 0 && !mIsSetFlying) {
                         //滚动父控件顶部，滚动事件交给WebView
-                        hasFling = true;
+                        mIsSetFlying = true;
                         webViewFling((int) -mScroller.getCurrVelocity());
                     }
                     break;
-                case SCROLL_RV_PARENT://RecyclerView向父控件滑动，fling事件，单纯用于计算速度。RecyclerView的flying事件传递最终会转换成Scroll事件处理.
+                case FLYING_FROM_RVLIST_TO_PARENT://RecyclerView向父控件滑动，fling事件，单纯用于计算速度。RecyclerView的flying事件传递最终会转换成Scroll事件处理.
                     if (getScrollY() != 0) {
                         invalidate();
-                    } else if (!hasFling) {
-                        hasFling = true;
+                    } else if (!mIsSetFlying) {
+                        mIsSetFlying = true;
                         //滑动到顶部时，滚动事件交给WebView
                         webViewFling((int) -mScroller.getCurrVelocity());
                     }
@@ -483,14 +477,14 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
     public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
         if (target instanceof NestedScrollingWebView) {
             //WebView滑到底部时，继续向下滑动父控件和RV
-            currentScrollType = SCROLL_WEB_PARENT;
+            mCurFlyingType = FLYING_FROM_WEBVIEW_TO_PARENT;
             parentFling(velocityY);
         } else if (target instanceof RecyclerView && velocityY < 0 && getScrollY() >= getInnerScrollHeight()) {
             //RV滑动到顶部时，继续向上滑动父控件和WebView，这里用于计算到达父控件的顶部时RV的速度
-            currentScrollType = SCROLL_RV_PARENT;
+            mCurFlyingType = FLYING_FROM_RVLIST_TO_PARENT;
             parentFling((int) velocityY);
         } else if (target instanceof RecyclerView && velocityY > 0) {
-            isRvFlingDown = true;
+            mIsRvFlyingDown = true;
         }
 
         return false;
