@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.util.TypedValue;
 import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebViewClient;
@@ -67,6 +68,16 @@ public class MainActivity extends AppCompatActivity {
         mainBinding.webContainer.setWebViewClient(new WebViewClient());
         mainBinding.webContainer.setWebChromeClient(new WebChromeClient());
         mainBinding.webContainer.loadUrl("https://github.com/wangzhengyi/Android-NestedDetail");
+        if (false) {
+            // 测试JS通知内容高度回调
+            mainBinding.webContainer.post(new Runnable() {
+                @Override
+                public void run() {
+                    int contentHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 200, getResources().getDisplayMetrics());
+                    mainBinding.webContainer.setJsCallWebViewContentHeight(contentHeight);
+                }
+            });
+        }
     }
 
     private void initRecyclerView() {

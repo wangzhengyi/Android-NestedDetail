@@ -14,6 +14,8 @@ import android.view.ViewConfiguration;
 import android.webkit.WebView;
 import android.widget.Scroller;
 
+import com.wzy.nesteddetail.utils.DimenHelper;
+
 public class NestedScrollingWebView extends WebView implements NestedScrollingChild2 {
     private boolean mIsSelfFling;
     private boolean mHasFling;
@@ -24,6 +26,8 @@ public class NestedScrollingWebView extends WebView implements NestedScrollingCh
     private int mLastY;
     private int mMaxScrollY;
     private int mWebViewContentHeight;
+    private int mJsCallWebViewContentHeight;
+
     private final int[] mScrollConsumed = new int[2];
 
     private final float DENSITY;
@@ -52,8 +56,24 @@ public class NestedScrollingWebView extends WebView implements NestedScrollingCh
         DENSITY = context.getResources().getDisplayMetrics().density;
     }
 
+    /**
+     * 设置JS回调的Web内容高度,解决内部计算不准导致的问题
+     */
+    public void setJsCallWebViewContentHeight(int webViewContentHeight) {
+        if (webViewContentHeight > 0 && webViewContentHeight != mJsCallWebViewContentHeight) {
+            mJsCallWebViewContentHeight = webViewContentHeight;
+            if (mJsCallWebViewContentHeight < getHeight()) {
+                // 内部高度<控件高度时,调整控件高度为内容高度
+                DimenHelper.updateLayout(this, DimenHelper.NOT_CHANGE, mJsCallWebViewContentHeight);
+            }
+        }
+    }
 
     public int getWebViewContentHeight() {
+        if (mWebViewContentHeight == 0) {
+            mWebViewContentHeight = mJsCallWebViewContentHeight;
+        }
+
         if (mWebViewContentHeight == 0) {
             mWebViewContentHeight = (int) (getContentHeight() * DENSITY);
         }
