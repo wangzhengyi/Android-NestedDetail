@@ -1,18 +1,17 @@
 package com.wzy.nesteddetail.activity;
 
-import android.databinding.DataBindingUtil;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.util.TypedValue;
 import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebViewClient;
 
-import com.wzy.nesteddetail.R;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.wzy.nesteddetail.adapter.RvAdapter;
 import com.wzy.nesteddetail.databinding.ActivityMainBinding;
 import com.wzy.nesteddetail.model.InfoBean;
@@ -26,7 +25,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+
+        mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(mainBinding.getRoot());
+
         initImmersed();
         initView();
     }

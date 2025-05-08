@@ -1,13 +1,6 @@
 package com.wzy.nesteddetail.view;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.view.NestedScrollingParent2;
-import android.support.v4.view.NestedScrollingParentHelper;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -16,6 +9,13 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.Scroller;
+
+import androidx.annotation.NonNull;
+import androidx.core.view.NestedScrollingParent2;
+import androidx.core.view.NestedScrollingParentHelper;
+import androidx.core.view.ViewCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +66,13 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
     }
 
     @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        findWebView(this);
+        findRecyclerView(this);
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
@@ -93,8 +100,6 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
             measureChild(child, childWidthMeasureSpec, childHeightMeasureSpec);
         }
         setMeasuredDimension(width, measureHeight);
-        findWebView(this);
-        findRecyclerView(this);
     }
 
     @Override
@@ -454,7 +459,8 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
     /****** NestedScrollingParent2 BEGIN ******/
 
     @Override
-    public boolean onStartNestedScroll(@NonNull View child, @NonNull View target, int axes, int type) {
+    public boolean onStartNestedScroll(@NonNull View child, @NonNull View target, @ViewCompat.ScrollAxis int axes,
+                                       @ViewCompat.NestedScrollType int type) {
         return (axes & ViewCompat.SCROLL_AXIS_VERTICAL) != 0;
     }
 
@@ -504,21 +510,17 @@ public class NestedScrollingDetailContainer extends ViewGroup implements NestedS
     }
 
     @Override
-    public void onNestedPreScroll(@NonNull View target, int dx, int dy, @Nullable int[] consumed, int type) {
+    public void onNestedPreScroll(@NonNull View target, int dx, int dy, @NonNull int[] consumed, int type) {
         boolean isWebViewBottom = !canWebViewScrollDown();
         boolean isCenter = isParentCenter();
         if (dy > 0 && isWebViewBottom && getScrollY() < getInnerScrollHeight()) {
             //为了WebView滑动到底部，继续向下滑动父控件
             scrollBy(0, dy);
-            if (consumed != null) {
-                consumed[1] = dy;
-            }
+            consumed[1] = dy;
         } else if (dy < 0 && isCenter) {
             //为了RecyclerView滑动到顶部时，继续向上滑动父控件
             scrollBy(0, dy);
-            if (consumed != null) {
-                consumed[1] = dy;
-            }
+            consumed[1] = dy;
         }
         if (isCenter && !isWebViewBottom) {
             //异常情况的处理
