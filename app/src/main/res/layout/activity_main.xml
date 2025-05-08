@@ -1,63 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.MainActivity">
 
-    <data>
+    <com.wzy.nesteddetail.view.NestedScrollingDetailContainer
+        android:id="@+id/nested_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    </data>
-
-    <android.support.constraint.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".activity.MainActivity">
-
-        <com.wzy.nesteddetail.view.NestedScrollingDetailContainer
-            android:id="@+id/nested_container"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <com.wzy.nesteddetail.view.NestedScrollingWebView
-                android:id="@+id/web_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:tag="nested_scroll_webview" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="400dp"
-                android:background="@color/colorAccent"
-                android:gravity="center"
-                android:text="不可滑动的View"
-                android:textSize="30dp" />
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_list"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:tag="nested_scroll_recyclerview" />
-
-
-        </com.wzy.nesteddetail.view.NestedScrollingDetailContainer>
+        <com.wzy.nesteddetail.view.NestedScrollingWebView
+            android:id="@+id/web_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:tag="nested_scroll_webview" />
 
         <TextView
-            android:id="@+id/v_tool_bar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:background="@color/colorAccent"
             android:gravity="center"
-            android:paddingTop="3dp"
-            android:paddingBottom="3dp"
-            android:text="快速滑动到评论"
-            android:textSize="15dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent" />
+            android:text="不可滑动的View"
+            android:textSize="30dp" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:tag="nested_scroll_recyclerview" />
 
-    </android.support.constraint.ConstraintLayout>
-</layout>
+    </com.wzy.nesteddetail.view.NestedScrollingDetailContainer>
+
+    <TextView
+        android:id="@+id/v_tool_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:text="快速滑动到评论"
+        android:textSize="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
