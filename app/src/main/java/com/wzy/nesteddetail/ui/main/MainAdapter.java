@@ -1,23 +1,23 @@
-package com.wzy.nesteddetail.adapter;
+package com.wzy.nesteddetail.ui.main;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.wzy.nesteddetail.R;
-import com.wzy.nesteddetail.model.InfoBean;
+import com.wzy.nesteddetail.data.model.InfoBean;
 
 import java.util.List;
 
-public class RvAdapter extends RecyclerView.Adapter {
+public class MainAdapter extends RecyclerView.Adapter {
     private List<InfoBean> mData;
     private LayoutInflater mInflater;
 
-    public RvAdapter(Context context, List<InfoBean> datas) {
+    public MainAdapter(Context context, List<InfoBean> datas) {
         this.mData = datas;
         this.mInflater = LayoutInflater.from(context);
     }
@@ -27,9 +27,9 @@ public class RvAdapter extends RecyclerView.Adapter {
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         switch (viewType) {
             case InfoBean.TYPE_ITEM:
-                return new ContentHolder(mInflater.inflate(R.layout.layout_content_layout, viewGroup, false));
+                return new ContentHolder(mInflater.inflate(R.layout.item_content, viewGroup, false));
             case InfoBean.TYPE_TITLE:
-                return new TitleHolder(mInflater.inflate(R.layout.layout_title_layout, viewGroup, false));
+                return new TitleHolder(mInflater.inflate(R.layout.item_title, viewGroup, false));
             default:
                 return null;
         }

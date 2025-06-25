@@ -1,14 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    dataBinding {
-        enabled = true
-    }
-    compileSdkVersion 28
+    namespace 'com.wzy.nesteddetail'
+    compileSdkVersion 34
+    
     defaultConfig {
         applicationId "com.wzy.nesteddetail"
-        minSdkVersion 14
-        targetSdkVersion 28
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
     }
@@ -20,10 +19,67 @@ android {
     }
 }
 
+// 自定义任务：检查XML文件中的非androidx引用
+task checkXmlReferences {
+    description = '检查XML文件中是否存在非androidx引用'
+    group = 'verification'
+    
+    doLast {
+        def resDir = file('src/main/res')
+        def hasErrors = false
+        def errorFiles = []
+        
+        println "🔍 开始检查XML文件中的非androidx引用..."
+        
+        resDir.eachFileRecurse { file ->
+            if (file.name.endsWith('.xml')) {
+                def content = file.text
+                if (content.contains('android.support.')) {
+                    def relativePath = file.relativePath(resDir)
+                    println "❌ 发现非androidx引用: ${relativePath}"
+                    
+                    // 查找具体的引用
+                    content.eachLine { line, lineNumber ->
+                        if (line.contains('android.support.')) {
+                            def matches = line.findAll(/android\.support\.[\w.]+/)
+                            matches.each { match ->
+                                println "   第${lineNumber}行: ${match}"
+                                errorFiles << "${relativePath}:${lineNumber} - ${match}"
+                            }
+                        }
+                    }
+                    hasErrors = true
+                }
+            }
+        }
+        
+        if (hasErrors) {
+            println "\n💥 构建失败：发现${errorFiles.size()}个非androidx引用"
+            println "请将以下引用替换为androidx版本："
+            errorFiles.each { error ->
+                println "   - ${error}"
+            }
+            println "\n建议替换："
+            println "   android.support.constraint.ConstraintLayout → androidx.constraintlayout.widget.ConstraintLayout"
+            println "   android.support.v7.widget.RecyclerView → androidx.recyclerview.widget.RecyclerView"
+            println "   android.support.v4.* → androidx.legacy.* 或对应的androidx包"
+            throw new GradleException("XML验证失败：发现非androidx引用，构建终止")
+        } else {
+            println "✅ 所有XML文件检查通过，未发现非androidx引用"
+        }
+    }
+}
+
+// 将检查任务关联到编译流程
+preBuild.dependsOn checkXmlReferences
+
+// 也可以在clean后执行检查
+clean.finalizedBy checkXmlReferences
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:support-v4:28.0.0'
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }

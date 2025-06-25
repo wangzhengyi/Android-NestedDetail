@@ -1,4 +1,4 @@
-package com.wzy.nesteddetail.model;
+package com.wzy.nesteddetail.data.model;
 
 public class InfoBean {
     public static final int TYPE_TITLE = 1;
